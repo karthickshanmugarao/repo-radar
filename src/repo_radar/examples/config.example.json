@@ -17,6 +17,8 @@
       "pr_threshold": 25
     },
     "output_format": "json",
-    "output_path": "output.json"
+    "output_path": "reports\\output.json",
+    "summary_format": "json",
+    "summary_output_path": "reports\\summary_output.json"
   }
   

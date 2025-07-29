@@ -1,4 +1,6 @@
 from typing import Dict, List, Any
+import json, os
+from repo_radar.utils.path_utils import resolve_path
 
 def get_team_for_user(username: str, teams: Dict[str, List[str]]) -> str:
     for team, members in teams.items():
@@ -33,4 +35,62 @@ def summarize_failure_counts(team_results: Dict[str, Dict[str, List[Dict[str, An
 
     return summary
 
+def generate_markdown_summary(summary: Dict[str, Dict[str, int]]) -> str:
+    lines = ["# 🔍 Team-wise Audit Summary\n"]
 
+    for team, checks in summary.items():
+        lines.append(f"## 🧑‍🤝‍🧑 {team}")
+        if not checks:
+            lines.append("_No failures_\n")
+            continue
+
+        for check, count in checks.items():
+            lines.append(f"- **{check}**: {count} failure(s)")
+
+        lines.append("")  # add a blank line between teams
+
+    return "\n".join(lines)
+
+def save_failure_counts(team_results:dict, config: dict) -> None:
+    summary_format = config.get("summary_format", "json")
+    summary_path = resolve_path(config.get("summary_output_path", "summary_output.json"))
+
+    summary = summarize_failure_counts(team_results)
+    if summary_format == "json":
+        # Save failure counts JSON
+        summary_path = config.get("summary_output_path", "summary_output.json")
+        with open(summary_path, "w") as f:
+            json.dump(summary, f, indent=2)
+        
+    elif summary_format == "markdown":
+        with open(summary_path, "w") as f:
+            f.write(generate_markdown_summary(summary))
+
+    else:
+        raise ValueError("Unsupported summary_format. Use 'json' or 'markdown'.")
+    
+    print(f"📊 Summary report saved to {summary_path}")
+
+def save_all_results(team_results: dict, config: dict) -> None:
+    output_format = config.get("output_format", "json")
+    output_path = resolve_path(config.get("output_path", f"audit_output.{output_format}"))
+
+    if output_format == "json":
+        # Save all results
+        with open(output_path, "w") as f:
+            json.dump(team_results, f, indent=2)
+
+    elif output_format == "markdown":
+        with open(output_path, "w") as f:
+            for team, checks in team_results.items():
+                f.write(f"# Team: {team}\n\n")
+                for check_name, results in checks.items():
+                    f.write(f"## {check_name.replace('_', ' ').title()}\n")
+                    f.write("```\n")
+                    f.write(json.dumps(results, indent=2))
+                    f.write("\n```\n\n")
+        
+    else:
+        raise ValueError("Unsupported output_format. Use 'json' or 'markdown'.")
+
+    print(f"✅ Audit report saved to {output_path}")
