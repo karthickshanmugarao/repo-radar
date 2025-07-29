@@ -23,3 +23,14 @@ def group_results_by_team(
 
     return summary
 
+def summarize_failure_counts(team_results: Dict[str, Dict[str, List[Dict[str, Any]]]]) -> Dict[str, Dict[str, int]]:
+    summary = {}
+
+    for team, checks in team_results.items():
+        summary[team] = {}
+        for check_name, failures in checks.items():
+            summary[team][check_name] = len(failures)
+
+    return summary
+
+

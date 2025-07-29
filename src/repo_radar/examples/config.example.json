@@ -7,7 +7,7 @@
     "start_date": "2025-07-21",
     "end_date": "2025-07-28",
     "enabled_checks": [
-      "get_old_open_prs",
+      "get_stale_or_long_lived_prs",
       "get_large_closed_prs"
     ], 
     "get_stale_or_long_lived_prs": {

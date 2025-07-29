@@ -1,10 +1,10 @@
 from github import Github
-from datetime import datetime, timedelta
+from github.Repository import Repository
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any
 from repo_radar.utils.team_utils import get_team_for_user
 
-def get_stale_or_long_lived_prs(config: Dict[str, Any], repo) -> List[Dict[str, Any]]:
-    gh = repo._requester._GithubObject__github  # ugly but gives access to search
+def get_stale_or_long_lived_prs(gh: Github, repo: Repository, config: Dict[str, Any]) -> List[Dict[str, Any]]:
     owner, repo_name = repo.full_name.split("/")
     pr_age_threshold = config.get("get_stale_or_long_lived_prs", {}).get("pr_age_threshold", 7)
     start_date = config["start_date"]
@@ -40,7 +40,7 @@ def get_stale_or_long_lived_prs(config: Dict[str, Any], repo) -> List[Dict[str, 
 
     for issue in open_issues:
         pr = repo.get_pull(issue.number)
-        age_days = (datetime.utcnow() - pr.created_at).days
+        age_days = (datetime.now(timezone.utc) - pr.created_at).days
         if age_days > pr_age_threshold:
             results.append({
                 "number": pr.number,
