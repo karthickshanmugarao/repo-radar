@@ -1,9 +1,10 @@
 import os
 from github import Github
 from github.Repository import Repository
-import json
+from dotenv import load_dotenv
 
 def get_repo(config: dict = None) -> Repository:
+    load_dotenv()
     token = os.environ.get("GITHUB_TOKEN")
     if not token:
         raise EnvironmentError("❌ GITHUB_TOKEN not found in environment variables.")

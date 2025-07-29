@@ -10,8 +10,8 @@
       "get_old_open_prs",
       "get_large_closed_prs"
     ], 
-    "get_old_open_prs": {
-      "old_pr_days": 14
+    "get_stale_or_long_lived_prs": {
+      "pr_age_threshold": 14
     },
     "get_large_closed_prs": {
       "pr_threshold": 25
