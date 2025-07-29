@@ -1,0 +1,21 @@
+{
+    "teams": {
+      "backend": ["alice", "bob"],
+      "frontend": ["carol"]
+    },
+    "start_date": "2025-07-21",
+    "end_date": "2025-07-28",
+    "enabled_checks": [
+      "get_old_open_prs",
+      "get_large_closed_prs"
+    ],
+    "get_old_open_prs": {
+      "old_pr_days": 14
+    },
+    "get_large_closed_prs": {
+      "pr_threshold": 25
+    },
+    "output_format": "json",
+    "output_path": "output.json"
+  }
+  

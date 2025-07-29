@@ -1,14 +1,21 @@
-from .queries import *
+from importlib import import_module
 
 def run_queries(config: dict, repo):
-    return {
-        "tests_failing_checkall": get_failing_checkall_tests(repo, config),
-        "closed_prs_with_test_failures": get_closed_prs_with_test_failures(repo, config),
-        "non_main_branch_prs": get_non_main_branch_prs(repo, config),
-        "old_open_prs": get_old_open_prs(repo, config),
-        "weekly_open_prs_per_team": get_weekly_open_prs_per_team(repo, config),
-        "weekly_closed_prs": get_weekly_closed_prs(repo, config),
-        "large_closed_prs": get_large_closed_prs(repo, config),
-        "prs_with_tests": get_prs_with_tests(repo, config),
-        "total_unit_tests": get_total_unit_tests(repo, config)
-    }
+    from os import listdir
+    from os.path import dirname, isfile, join
+
+    results = {}
+    enabled = config.get("enabled_checks", [])
+
+    queries_dir = dirname(__file__) + "/queries"
+    py_files = [f for f in listdir(queries_dir) if f.endswith(".py") and f != "__init__.py"]
+
+    for file in py_files:
+        module_name = f"reporadar.queries.{file[:-3]}"
+        module = import_module(module_name)
+        for name in dir(module):
+            if name.startswith("get_"):
+                if not enabled or name in enabled:
+                    fn = getattr(module, name)
+                    results[name] = fn(repo, config)
+    return results
