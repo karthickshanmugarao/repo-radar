@@ -6,8 +6,10 @@ from repo_radar.audit_runner import run_queries
 from repo_radar.github_client import get_github_and_repo
 from repo_radar.schema import get_tool_schemas
 import argparse
+from dotenv import load_dotenv
 
 # Load OpenAI key from environment
+load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def call_llm_with_mcp(prompt: str, config: dict) -> dict:
@@ -38,18 +40,24 @@ def call_llm_with_mcp(prompt: str, config: dict) -> dict:
     return result
 
 
-if __name__ == "__main__":
+def main():
     # Example minimal config
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", help="Path to config JSON file",
                         default=r"E:\py_workspace\repo-radar\src\repo_radar\examples\config.example.json")
+
+    parser.add_argument("--prompt", help="Prompt to LLM",
+                        default="Which PRs were too old in the repo during the last week")
     args = parser.parse_args()
 
     with open(args.config) as f:
         config = json.load(f)
 
-    prompt = "Which PRs were too old in the repo during the last week and owned by any team?, disable other checks in the config"
+    prompt = args.prompt
 
     output = call_llm_with_mcp(prompt, config)
     print("📊 Audit result from LLM:")
     print(json.dumps(output, indent=2))
+
+if __name__ == "__main__":
+    main()

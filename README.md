@@ -19,11 +19,22 @@ It can be run in two modes:
 
 ---
 
-## 📦 Installation
+## 📦 How to Install and Use
+1. Install using the below command
+```bash
+pip install repo-radar
+```
+2. Copy and use the example json to include required configurations.
+config.example.json at repo_radar/examples
+3. Run the CLI by passing the config.json path
+```bash
+repo-radar-config-audit --config path/to/config.json
+```
 
-### ⬇️ Clone and install dependencies:
+### ⬇️ To Contribute: Clone the repository and install the dependencies as follows:
 
 ```bash
 git clone https://github.com/karthickshanmugarao/repo-radar.git
 cd repo-radar
-pip install -r requirements.txt
+pip install uv
+uv pip install .

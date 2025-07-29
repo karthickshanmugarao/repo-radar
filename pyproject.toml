@@ -1,6 +1,6 @@
 [project]
 name = "repo-radar"
-version = "0.1.0"
+version = "0.1.1"
 description = "GitHub Pull Request audit toolkit with LLM and CLI support"
 readme = "README.md"
 authors = [
@@ -19,6 +19,7 @@ dependencies = [
 
 [project.scripts]
 repo-radar-config-audit = "repo_radar.audit_scripts.run_config_audit:main"
+repo-radar-llm-audit = "repo_radar.audit_scripts.run_llm_audit:main"
 
 [build-system]
 requires = ["uv_build>=0.8.3,<0.9.0"]
