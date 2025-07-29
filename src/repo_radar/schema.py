@@ -1,8 +1,7 @@
 from repo_radar.schemas.tools import GetLargePRsInput, GetStaleOrLongLivedPRsInput
-from typing import List
-from openai.types.beta.threads import ToolFunction
+from typing import List, Dict
 
-def pydantic_schema_to_tool(name: str, description: str, model) -> ToolFunction:
+def pydantic_schema_to_tool(name: str, description: str, model) -> Dict:
     return {
         "type": "function",
         "function": {
@@ -12,7 +11,7 @@ def pydantic_schema_to_tool(name: str, description: str, model) -> ToolFunction:
         }
     }
 
-def get_tool_schemas() -> List[ToolFunction]:
+def get_tool_schemas() -> List:
     return [
         pydantic_schema_to_tool(
             name="get_large_prs",

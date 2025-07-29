@@ -1,5 +1,5 @@
 {
-    "repository": "tiangolo/fastapi",
+    "repository": "https://github.com/fastapi/fastapi",
     "teams": {
       "backend": ["alice", "bob"],
       "frontend": ["carol"]
@@ -8,12 +8,12 @@
     "end_date": "2025-07-28",
     "enabled_checks": [
       "get_stale_or_long_lived_prs",
-      "get_large_closed_prs"
+      "get_large_prs"
     ], 
     "get_stale_or_long_lived_prs": {
       "pr_age_threshold": 14
     },
-    "get_large_closed_prs": {
+    "get_large_prs": {
       "pr_threshold": 25
     },
     "output_format": "json",
