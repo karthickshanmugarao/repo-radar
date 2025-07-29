@@ -4,6 +4,7 @@ from datetime import datetime
 from github import Github
 from github.Repository import Repository
 from typing import Dict, Any, List
+from tqdm import tqdm
 
 from repo_radar.utils.team_utils import get_team_for_user
 
@@ -20,7 +21,7 @@ def get_large_closed_prs(gh: Github, repo: Repository, config: Dict[str, Any]) -
     query = f"repo:{owner}/{repo_name} is:pr is:closed closed:{start_date}..{end_date}"
     issues = gh.search_issues(query=query)
 
-    for issue in issues:
+    for issue in tqdm(issues, desc="Checking Closed PRs with Large number of files"):
         pr = repo.get_pull(issue.number)
 
         if merged_only and not pr.merged:
