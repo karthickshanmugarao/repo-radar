@@ -19,17 +19,23 @@ It can be run in two modes:
 
 ---
 
-## 📦 How to Install and Use
+## 📦 Steps to Install and Use the toolkit
 1. Install using the below command
-```bash
-pip install repo-radar
-```
+    ```bash
+    pip install repo-radar
+    ```
 2. Copy and use the example json to include required configurations.
 config.example.json at repo_radar/examples
-3. Run the CLI by passing the config.json path
-```bash
-repo-radar-config-audit --config path/to/config.json
-```
+3. Run the following CLI by passing the config.json path
+    ```bash
+    repo-radar-config-audit --config path/to/config.json
+    ```
+4. To automatically pick and run the query using LLM
+   1. Add the OpenAI API token to .env file, and use the below command
+   2. Run the following CLI by passing the config.json path and the prompt
+    ```bash
+    repo-radar-llm-audit --config path/to/config.json --prompt "Which were stale PRs last week"
+    ```
 
 ### ⬇️ To Contribute: Clone the repository and install the dependencies as follows:
 
