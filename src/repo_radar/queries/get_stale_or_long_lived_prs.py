@@ -19,7 +19,7 @@ def get_stale_or_long_lived_prs(gh: Github, repo: Repository, config: Dict[str, 
     closed_query = f"repo:{owner}/{repo_name} is:pr is:closed closed:{start_date}..{end_date}"
     closed_issues = gh.search_issues(query=closed_query)
 
-    for issue in tqdm(closed_issues, desc="Checking for aged PRs that are Closed recently"):
+    for issue in tqdm(closed_issues, total=closed_issues.totalCount, desc="Checking for aged PRs that are Closed recently"):
         pr = repo.get_pull(issue.number)
         if pr.created_at and pr.closed_at:
             age_days = (pr.closed_at - pr.created_at).days
@@ -39,7 +39,7 @@ def get_stale_or_long_lived_prs(gh: Github, repo: Repository, config: Dict[str, 
     open_query = f"repo:{owner}/{repo_name} is:pr is:open created:<{(datetime.utcnow() - timedelta(days=pr_age_threshold)).date()}"
     open_issues = gh.search_issues(query=open_query)
 
-    for issue in tqdm(open_issues, desc="Checking for aged PRs that are still Open"):
+    for i, issue in enumerate(tqdm(open_issues, total=open_issues.totalCount, desc="Checking for aged PRs that are still Open")):
         pr = repo.get_pull(issue.number)
         age_days = (datetime.now(timezone.utc) - pr.created_at).days
         if age_days > pr_age_threshold:
@@ -53,8 +53,8 @@ def get_stale_or_long_lived_prs(gh: Github, repo: Repository, config: Dict[str, 
                 "state": "open",
                 "team": get_team_for_user(pr.user.login, config.get("teams", {}))
             })
-        # if len(results) > 25:
-        #     print("Too many open PRs, stopping after finding 25 aged once")
-        #     break
+        if i > 20:
+            print("Too many open PRs, stopping analysis after 100 PRs")
+            break
 
     return results
