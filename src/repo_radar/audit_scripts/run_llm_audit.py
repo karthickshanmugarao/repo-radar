@@ -4,6 +4,7 @@ import openai
 from repo_radar.audit_runner import run_queries
 from repo_radar.github_client import get_repo
 from repo_radar.schema import get_tool_schemas
+import argparse
 
 # Load OpenAI key from environment
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -12,7 +13,7 @@ def call_llm_with_mcp(prompt: str, config: dict) -> dict:
     tools = get_tool_schemas()
 
     response = openai.ChatCompletion.create(
-        model="gpt-4o",  # or "gpt-4o-mini" for o3
+        model="gpt-4o-mini",  # or "gpt-4o-mini" for o3
         messages=[
             {"role": "user", "content": prompt}
         ],
@@ -36,16 +37,15 @@ def call_llm_with_mcp(prompt: str, config: dict) -> dict:
 
 if __name__ == "__main__":
     # Example minimal config
-    config = {
-        "teams": {
-            "backend": ["alice", "bob"]
-        },
-        "start_date": "2025-07-21",
-        "end_date": "2025-07-28",
-        "repository": "tiangolo/fastapi"
-    }
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", help="Path to config JSON file",
+                        default=r"E:\py_workspace\repo-radar\src\repo_radar\examples\config.example.json")
+    args = parser.parse_args()
 
-    prompt = "Which PRs were too old in the repo during the last week and owned by the any team?"
+    with open(args.config) as f:
+        config = json.load(f)
+
+    prompt = "Which PRs were too old in the repo during the last week and owned by any team?"
 
     output = call_llm_with_mcp(prompt, config)
     print("📊 Audit result from LLM:")

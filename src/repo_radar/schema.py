@@ -1,35 +1,27 @@
-def get_tool_schemas():
-    queries = [
-        ("get_failing_checkall_tests", "Failures in checkall test run."),
-        ("get_closed_prs_with_test_failures", "Closed PRs with failed checks."),
-        ("get_non_main_branch_prs", "PRs targeting non-main branches."),
-        ("get_old_open_prs", "Open PRs older than 1 week."),
-        ("get_weekly_open_prs_per_team", "Open PRs per team."),
-        ("get_weekly_closed_prs", "Closed PRs in timeframe."),
-        ("get_large_closed_prs", "Closed PRs with >20 files."),
-        ("get_prs_with_tests", "Closed PRs with unit tests."),
-        ("get_total_unit_tests", "Total unit test files in timeframe.")
-    ]
+from repo_radar.schemas.tools import GetLargePRsInput, GetStaleOrLongLivedPRsInput
+from typing import List
+from openai.types.beta.threads import ToolFunction
 
-    return [{
+def pydantic_schema_to_tool(name: str, description: str, model) -> ToolFunction:
+    return {
         "type": "function",
         "function": {
             "name": name,
-            "description": desc,
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "start_date": {"type": "string"},
-                    "end_date": {"type": "string"},
-                    "teams": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "array",
-                            "items": {"type": "string"}
-                        }
-                    }
-                },
-                "required": ["start_date", "end_date", "teams"]
-            }
+            "description": description,
+            "parameters": model.schema()
         }
-    } for name, desc in queries]
+    }
+
+def get_tool_schemas() -> List[ToolFunction]:
+    return [
+        pydantic_schema_to_tool(
+            name="get_large_prs",
+            description="Get PRs (open and/or closed) with large number of changed files.",
+            model=GetLargePRsInput
+        ),
+        pydantic_schema_to_tool(
+            name="get_stale_or_long_lived_prs",
+            description="Get PRs that were open for too long or are still open.",
+            model=GetStaleOrLongLivedPRsInput
+        )
+    ]
