@@ -3,10 +3,8 @@ name = "repo-radar"
 version = "0.1.1"
 description = "GitHub Pull Request audit toolkit with LLM and CLI support"
 readme = "README.md"
-authors = [
-    { name = "Karthick Shanmuga Rao", email = "karthikssfeb@gmail.com" }
-]
-requires-python = ">=3.9"
+authors = [{ name = "Karthick Shanmuga Rao", email = "karthikssfeb@gmail.com" }]
+requires-python = ">=3.10"
 dependencies = [
     "PyGithub>=2.1.1",
     "pydantic>=2.0",
@@ -15,6 +13,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "tqdm>=4.67.1",
     "openai>=1.97.1",
+    "fastmcp>=2.10.6",
 ]
 
 [project.scripts]
