@@ -1,0 +1,6 @@
+{
+    "enabled_checks": [
+        "get_large_prs",
+        "get_stale_or_long_lived_prs"
+    ]
+}

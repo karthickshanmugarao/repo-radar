@@ -1,60 +1,108 @@
-from github import Github
-from github.Repository import Repository
-from datetime import datetime, timedelta, timezone
+"""
+Identify stale (open too long) and long-lived (closed but took long) pull requests.
+
+Finds:
+- Open PRs that have been open for more than `age_threshold_days`.
+- Closed PRs that were open longer than `age_threshold_days` and closed within a date range.
+"""
+
+from datetime import datetime, timezone
 from typing import List, Dict, Any
+
+from github import Github, Repository
+from pydantic import BaseModel, Field, Extra
 from tqdm import tqdm
+
 from repo_radar.utils.team_utils import get_team_for_user
 
-def get_stale_or_long_lived_prs(gh: Github, repo: Repository, config: Dict[str, Any]) -> List[Dict[str, Any]]:
+
+class Config(BaseModel, extra=Extra.allow):
+    """Configuration for stale or long-lived PRs.
+
+    Parameters
+    ----------
+    start_date : str
+        Start date for filtering closed PRs (YYYY-MM-DD).
+    end_date : str
+        End date for filtering closed PRs (YYYY-MM-DD).
+    age_threshold_days : int
+        Threshold (in days) to consider a PR stale or long-lived.
+    """
+
+    start_date: str
+    end_date: str
+    age_threshold_days: int = 7
+
+
+def get_stale_or_long_lived_prs(
+    gh: Github,
+    repo: Repository.Repository,
+    config: Config,
+) -> List[Dict[str, Any]]:
     owner, repo_name = repo.full_name.split("/")
-    pr_age_threshold = config.get("get_stale_or_long_lived_prs", {}).get("pr_age_threshold", 7)
-    start_date = config["start_date"]
-    end_date = config["end_date"]
-    start_dt = datetime.fromisoformat(start_date)
-    end_dt = datetime.fromisoformat(end_date)
+
+    start_date = config.start_date
+    end_date = config.end_date
+    age_threshold = config.age_threshold_days
 
     results = []
 
-    # 🟡 Closed PRs in the given window
-    closed_query = f"repo:{owner}/{repo_name} is:pr is:closed closed:{start_date}..{end_date}"
-    closed_issues = gh.search_issues(query=closed_query)
+    query_closed = (
+        f"repo:{owner}/{repo_name} is:pr is:closed closed:{start_date}..{end_date}"
+    )
+    closed_issues = gh.search_issues(query=query_closed)
 
-    for issue in tqdm(closed_issues, total=closed_issues.totalCount, desc="Checking for aged PRs that are Closed recently"):
+    for issue in tqdm(
+        closed_issues, total=closed_issues.totalCount, desc="Checking Closed PRs"
+    ):
         pr = repo.get_pull(issue.number)
-        if pr.created_at and pr.closed_at:
-            age_days = (pr.closed_at - pr.created_at).days
-            if age_days > pr_age_threshold:
-                results.append({
+        if not pr.created_at or not pr.closed_at:
+            continue
+
+        pr_age_days = (pr.closed_at - pr.created_at).days
+        if pr_age_days > age_threshold:
+            results.append(
+                {
                     "number": pr.number,
                     "title": pr.title,
                     "user": pr.user.login,
                     "created_at": pr.created_at.isoformat(),
                     "closed_at": pr.closed_at.isoformat(),
-                    "open_duration_days": age_days,
+                    "age_days": pr_age_days,
                     "state": "closed",
-                    "team": get_team_for_user(pr.user.login, config.get("teams", {}))
-                })
+                    "type": "long_lived",
+                    "team": get_team_for_user(
+                        pr.user.login, getattr(config, "teams", {})
+                    ),
+                }
+            )
 
-    # 🟢 Open PRs older than threshold
-    open_query = f"repo:{owner}/{repo_name} is:pr is:open created:<{(datetime.utcnow() - timedelta(days=pr_age_threshold)).date()}"
-    open_issues = gh.search_issues(query=open_query)
+    open_query = f"repo:{repo.full_name} is:pr is:open"
+    open_issues = gh.search_issues(open_query)
 
-    for i, issue in enumerate(tqdm(open_issues, total=open_issues.totalCount, desc="Checking for aged PRs that are still Open")):
-        pr = repo.get_pull(issue.number)
-        age_days = (datetime.now(timezone.utc) - pr.created_at).days
-        if age_days > pr_age_threshold:
-            results.append({
-                "number": pr.number,
-                "title": pr.title,
-                "user": pr.user.login,
-                "created_at": pr.created_at.isoformat(),
-                "closed_at": None,
-                "open_duration_days": age_days,
-                "state": "open",
-                "team": get_team_for_user(pr.user.login, config.get("teams", {}))
-            })
-        if i > 20:
-            print("Too many open PRs, stopping analysis after 100 PRs")
+    for i, pr in enumerate(
+        tqdm(open_issues, total=open_issues.totalCount, desc="Checking Open PRs")
+    ):
+        pr_age_days = (datetime.now(timezone.utc) - pr.created_at).days
+        if pr_age_days > age_threshold:
+            results.append(
+                {
+                    "number": pr.number,
+                    "title": pr.title,
+                    "user": pr.user.login,
+                    "created_at": pr.created_at.isoformat(),
+                    "closed_at": None,
+                    "age_days": pr_age_days,
+                    "state": "open",
+                    "type": "stale",
+                    "team": get_team_for_user(
+                        pr.user.login, getattr(config, "teams", {})
+                    ),
+                }
+            )
+
+        if i >= getattr(config, "max_open_prs_to_analyse", 200):
+            print(f"Too many open PRs, stopping analysis after {i+1} PRs")
             break
 
     return results

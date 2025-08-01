@@ -1,0 +1,27 @@
+{
+  "repository": "https://github.com/fastapi/fastapi",
+  "teams": {
+    "backend": [
+      "alice",
+      "bob"
+    ],
+    "frontend": [
+      "carol"
+    ]
+  },
+  "max_open_prs_to_analyse": 20,
+  "start_date": "2025-07-21",
+  "end_date": "2025-07-28",
+  "get_stale_or_long_lived_prs": {
+    "age_threshold_days": 7
+  },
+  "get_large_prs": {
+    "pr_file_threshold": 20,
+    "merged_only": true,
+    "include_open": true
+  },
+  "output_format": "json",
+  "output_path": "reports\\output.json",
+  "summary_format": "json",
+  "summary_output_path": "reports\\summary_output.json"
+}
