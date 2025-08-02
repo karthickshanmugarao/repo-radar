@@ -18,7 +18,7 @@ dependencies = [
 
 [project.scripts]
 repo-radar-config-audit = "repo_radar.audit_scripts.run_config_audit:main"
-repo-radar-llm-audit = "repo_radar.audit_scripts.run_llm_audit:main"
+repo-radar-mcp-server = "repo_radar.mcp_server.mcp_server:main"
 
 [build-system]
 requires = ["uv_build>=0.8.3,<0.9.0"]

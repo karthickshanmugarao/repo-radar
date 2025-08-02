@@ -1,5 +1,3 @@
-# repo_radar/mcp_server.py
-
 import importlib.util
 import inspect
 from pathlib import Path
