@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field, Extra
 from tqdm import tqdm
 
 from repo_radar.utils.team_utils import get_team_for_user
+from repo_radar.github_client import get_github_and_repo
 
 
 class Config(BaseModel, extra=Extra.allow):
@@ -35,10 +36,20 @@ class Config(BaseModel, extra=Extra.allow):
 
 
 def get_stale_or_long_lived_prs(
-    gh: Github,
-    repo: Repository.Repository,
     config: Config,
 ) -> List[Dict[str, Any]]:
+    """
+    Identify large pull requests by file count.
+
+    Parameters
+    ----------
+    config : Config
+        This is a Dict type with Parameters controlling date range and thresholds. Refer the Config class description.
+    """
+    if type(config) == "dict":
+        config = Config(**config)
+    gh, repo = get_github_and_repo(config.model_dump())
+
     owner, repo_name = repo.full_name.split("/")
 
     start_date = config.start_date

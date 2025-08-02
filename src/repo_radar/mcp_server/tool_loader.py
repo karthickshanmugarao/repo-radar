@@ -4,12 +4,14 @@ import importlib.util
 import inspect
 from pathlib import Path
 from fastmcp import FastMCP
+from typing import Callable, Tuple, Type
+from pydantic import BaseModel
 
 mcp = FastMCP("RepoRadarMCP")
 
 
 def load_tools_for_mcp():
-    QUERIES_DIR = Path(__file__).parent / "queries"
+    QUERIES_DIR = Path(r"E:\py_workspace\repo-radar\src\repo_radar\queries")
 
     for file in QUERIES_DIR.glob("*.py"):
         mod_name = f"repo_radar.queries.{file.stem}"
@@ -21,9 +23,8 @@ def load_tools_for_mcp():
             func = getattr(module, file.stem)
             doc = inspect.getdoc(func)
 
-            config_model = getattr(module, "Config")
+            config_model: Type[BaseModel] = getattr(module, "Config")
             config_doc = inspect.getdoc(config_model) or ""
-
             full_description = doc or ""
             if config_doc:
                 full_description += f"\n\nConfig Schema:\n{config_doc}"

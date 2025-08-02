@@ -2,9 +2,10 @@
 
 from typing import List, Dict, Any
 from github import Github, Repository
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, Extra, ConfigDict
 from tqdm import tqdm
 from repo_radar.utils.team_utils import get_team_for_user
+from repo_radar.github_client import get_github_and_repo
 
 
 class Config(BaseModel, extra=Extra.allow):
@@ -32,9 +33,7 @@ class Config(BaseModel, extra=Extra.allow):
     include_open: bool = True
 
 
-def get_large_prs(
-    gh: Github, repo: Repository.Repository, config: Config
-) -> List[Dict[str, Any]]:
+def get_large_prs(config: Config) -> List[Dict[str, Any]]:
     """
     Identify large pull requests by file count.
 
@@ -52,6 +51,11 @@ def get_large_prs(
     List[Dict[str, Any]]
         List of PR metadata exceeding the file threshold.
     """
+
+    if type(config) == "dict":
+        config = Config(**config)
+
+    gh, repo = get_github_and_repo(config.model_dump())
     results = []
     file_threshold = config.pr_file_threshold
 
