@@ -12,7 +12,9 @@ client_openai = OpenAI(
 )  # Automatically uses OPENAI_API_KEY env variable
 
 
-async def ask_gpt4o_for_tool(user_query="find stale PRs from repo "):
+async def ask_gpt4o_for_tool(
+    user_query="find stale PRs from repo for last 2 weeks only, today is 02 Aug 2025",
+):
     client = Client("http://127.0.0.1:8000/mcp/")
     tools = []
     async with client:

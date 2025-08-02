@@ -33,7 +33,9 @@ class Config(BaseModel, extra=Extra.allow):
     include_open: bool = True
 
 
-def get_large_prs(config: Config) -> List[Dict[str, Any]]:
+def get_large_prs(
+    gh: Github, repo: Repository.Repository, config: Config
+) -> List[Dict[str, Any]]:
     """
     Identify large pull requests by file count.
 
@@ -55,7 +57,6 @@ def get_large_prs(config: Config) -> List[Dict[str, Any]]:
     if type(config) == "dict":
         config = Config(**config)
 
-    gh, repo = get_github_and_repo(config.model_dump())
     results = []
     file_threshold = config.pr_file_threshold
 

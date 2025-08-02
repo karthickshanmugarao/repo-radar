@@ -36,6 +36,8 @@ class Config(BaseModel, extra=Extra.allow):
 
 
 def get_stale_or_long_lived_prs(
+    gh: Github,
+    repo: Repository.Repository,
     config: Config,
 ) -> List[Dict[str, Any]]:
     """
@@ -44,11 +46,11 @@ def get_stale_or_long_lived_prs(
     Parameters
     ----------
     config : Config
-        This is a Dict type with Parameters controlling date range and thresholds. Refer the Config class description.
+        This is a Pydantic class type or dict with Parameters controlling date range and thresholds.
+        Refer the Config class description and fill the start_date, end_date and age_threshold_days
     """
     if type(config) == "dict":
         config = Config(**config)
-    gh, repo = get_github_and_repo(config.model_dump())
 
     owner, repo_name = repo.full_name.split("/")
 
