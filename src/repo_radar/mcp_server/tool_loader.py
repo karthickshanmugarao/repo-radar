@@ -4,7 +4,9 @@ from pathlib import Path
 from fastmcp import FastMCP
 from typing import Callable, Tuple, Type
 from pydantic import BaseModel
+from pydantic import ValidationError
 from typing import Dict
+from fastmcp.exceptions import ToolError
 
 import argparse
 import json
@@ -64,21 +66,30 @@ def get_config_from_files():
 
 
 def insert_default_config_from_file(func, config_class):
-    def wrapper(config: dict):
-        # Load defaults
-        configs_from_file, _ = get_config_from_files()
+    def wrapper(config: str):
+        try:
+            # Load defaults
+            configs_from_file, _ = get_config_from_files()
 
-        # Merge: LLM overrides defaults
-        merged_config = {**configs_from_file, **config}
+            # Merge: LLM overrides defaults
+            config = json.loads(config)
+            merged_config = {**configs_from_file, **config}
 
-        # Convert to model
-        parsed_config = config_class(**merged_config)
+            # Convert to model
+            parsed_config = config_class(**merged_config)
 
-        # 🔧 Auto-create internal dependencies
-        gh, repo = get_github_and_repo(configs_from_file)
+            # 🔧 Auto-create internal dependencies
+            gh, repo = get_github_and_repo(configs_from_file)
 
-        # Call tool with just config, and inject gh/repo internally
-        return func(gh, repo, parsed_config)
+            # Call tool with just config, and inject gh/repo internally
+            return func(gh, repo, parsed_config)
+        except ValidationError as ve:
+            # Show Pydantic validation error nicely
+            print(f"Input validation failed: {ve.json(indent=2)}")
+            raise ToolError(f"Input validation failed: {ve.json(indent=2)}")
+        except Exception as e:
+            print(f"Tool execution failed: {str(e)}")
+            raise ToolError(f"Tool execution failed: {str(e)}")
 
     return wrapper
 
